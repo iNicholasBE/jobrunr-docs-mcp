@@ -24,7 +24,9 @@ public class DocsLoader {
 
     private static final Logger log = LoggerFactory.getLogger(DocsLoader.class);
 
-    private final WebClient webClient = WebClient.builder().build();
+    private final WebClient webClient = WebClient.builder()
+            .codecs(c -> c.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
+            .build();
     private final ObjectMapper mapper = new ObjectMapper();
     private final ReentrantLock loadLock = new ReentrantLock();
 
