@@ -1,0 +1,40 @@
+app = "jobrunr-docs-mcp"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  DOCS_URL = "https://www.jobrunr.io/mcp/docs.json"
+  DOCS_MANIFEST_URL = "https://www.jobrunr.io/mcp/manifest.json"
+  DOCS_POLL_INTERVAL = "PT15M"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "60s"
+    method = "get"
+    path = "/actuator/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

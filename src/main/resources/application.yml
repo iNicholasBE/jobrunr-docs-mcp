@@ -1,0 +1,42 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: jobrunr-docs-mcp
+  ai:
+    mcp:
+      server:
+        name: jobrunr-docs
+        version: 0.1.0
+        instructions: |
+          JobRunr documentation MCP server.
+          Tools: search_jobrunr_docs (hybrid BM25 + semantic search),
+          fetch_jobrunr_doc (raw markdown of a page),
+          list_jobrunr_doc_sections (top-level TOC).
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+docs:
+  url: ${DOCS_URL:https://www.jobrunr.io/mcp/docs.json}
+  manifest-url: ${DOCS_MANIFEST_URL:https://www.jobrunr.io/mcp/manifest.json}
+  poll-interval: ${DOCS_POLL_INTERVAL:PT15M}
+  reindex-secret: ${MCP_REINDEX_SECRET:}
+
+search:
+  hybrid:
+    rrf-k: 60
+    candidate-pool: 50
+
+logging:
+  level:
+    io.jobrunr.docsmcp: INFO
+    org.springframework.ai: INFO
