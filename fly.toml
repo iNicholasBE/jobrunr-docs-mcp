@@ -6,8 +6,10 @@ primary_region = "ams"
 
 [env]
   PORT = "8080"
-  DOCS_URL = "https://www.jobrunr.io/mcp/docs.json"
-  DOCS_MANIFEST_URL = "https://www.jobrunr.io/mcp/manifest.json"
+  # Temporary bootstrap: docs.json served from this repo until the Hugo workflow ships
+  # the canonical artifacts at https://www.jobrunr.io/mcp/. Flip back once that lands.
+  DOCS_URL = "https://raw.githubusercontent.com/iNicholasBE/jobrunr-docs-mcp/main/data/docs.json"
+  DOCS_MANIFEST_URL = "https://raw.githubusercontent.com/iNicholasBE/jobrunr-docs-mcp/main/data/manifest.json"
   DOCS_POLL_INTERVAL = "PT15M"
 
 [[services]]
