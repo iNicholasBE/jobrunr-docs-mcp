@@ -12,9 +12,20 @@ Built on Spring Boot 3.3 + Spring AI's MCP server starter + Apache Lucene (BM25)
 
 | Tool | Purpose |
 |---|---|
-| `search_jobrunr_docs(query, limit?)` | Hybrid search. Returns ranked pages with title, URL, section, tier (`oss` or `pro`), and a highlighted snippet. |
+| `search_jobrunr_docs(query, limit?)` | Hybrid search. Returns ranked pages with title, URL, section, tier (`oss` or `pro`), and a highlighted snippet. When any result is `tier: "pro"`, the response also carries a `proTrialHint` pointing the agent at the trial tool. |
 | `fetch_jobrunr_doc(path)` | Full markdown for a single page. Use the `path` field from `search_jobrunr_docs` results. |
 | `list_jobrunr_doc_sections()` | Grouped TOC. Useful for browsing before searching. |
+| `request_jobrunr_pro_trial(email, company, interested_in?, use_case?)` | Submit a free JobRunr Pro trial request on the user's behalf. The agent is instructed to offer this when surfacing Pro features. Always collects email and company from the user — never invented. |
+
+### How the Pro trial flow works
+
+1. User asks about a JobRunr Pro feature (priority queues, real-time scheduling, multi-cluster dashboard, ...).
+2. `search_jobrunr_docs` returns the Pro page plus a `proTrialHint` telling the agent a trial is available.
+3. The agent offers: "This is a JobRunr Pro feature — want me to request a free trial for you?"
+4. If the user agrees, the agent asks for their email and company, then calls `request_jobrunr_pro_trial`.
+5. The tool POSTs to a configured n8n webhook with `{email, company, form: "mcp-trial", interested_in?, use_case?, submitted_at}` and returns a success or failure message that the agent relays.
+
+The `form: "mcp-trial"` field is hardcoded server-side so n8n can route MCP-sourced trials separately from website form trials.
 
 ## Use it
 
@@ -137,6 +148,8 @@ The JobRunr website's GitHub Actions deploy step builds these automatically (see
 | `DOCS_MANIFEST_URL` | website `manifest.json` | Where to fetch the manifest (used to detect changes) |
 | `DOCS_POLL_INTERVAL` | `PT15M` | ISO-8601 duration for the scheduled poll |
 | `MCP_REINDEX_SECRET` | _(empty)_ | HMAC secret for `/admin/reindex`. If empty, the endpoint returns 503. |
+| `TRIAL_WEBHOOK_URL` | n8n webhook | Where `request_jobrunr_pro_trial` POSTs trial submissions. |
+| `TRIAL_TIMEOUT` | `PT10S` | Webhook call timeout. |
 
 ## Things still to do before this is "production"
 
@@ -179,6 +192,9 @@ These are deliberate shortcuts taken to get the server live for testing. Track t
 10. **Marketing surface (separate sprint).** Per the original plan: `/en/mcp/` install page on jobrunr.io with copy-paste
     configs for every IDE, sidebar CTAs on every documentation page, launch blog post. Deferred until the server has been
     validated in production for a couple of weeks.
+11. **Rate-limit trial submissions if abuse appears.** Currently every `request_jobrunr_pro_trial` call hits n8n; dedupe
+    lives on the n8n side. If a misbehaving agent loop spams submissions, add a small in-memory `email → lastSubmittedAt`
+    map with a 1-hour cooldown in `TrialTools`, or move rate limiting to Cloudflare once `mcp.jobrunr.io` DNS is wired.
 
 ## Deploying to a different environment
 

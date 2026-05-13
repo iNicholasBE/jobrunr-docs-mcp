@@ -1,6 +1,7 @@
 package io.jobrunr.docsmcp;
 
 import io.jobrunr.docsmcp.tools.DocsTools;
+import io.jobrunr.docsmcp.trial.TrialTools;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
@@ -17,9 +18,9 @@ public class DocsMcpApplication {
     }
 
     @Bean
-    public ToolCallbackProvider docsToolCallbacks(DocsTools docsTools) {
+    public ToolCallbackProvider docsToolCallbacks(DocsTools docsTools, TrialTools trialTools) {
         return MethodToolCallbackProvider.builder()
-                .toolObjects(docsTools)
+                .toolObjects(docsTools, trialTools)
                 .build();
     }
 }

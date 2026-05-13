@@ -59,6 +59,25 @@ class DocsToolsTest {
     void searchEmptyQueryReturnsNoResults() {
         DocsTools.SearchResponse resp = tools.searchJobrunrDocs("", 5);
         assertThat(resp.results()).isEmpty();
+        assertThat(resp.proTrialHint()).isNull();
+    }
+
+    @Test
+    void searchAttachesProTrialHintWhenProResultsPresent() {
+        DocsTools.SearchResponse resp = tools.searchJobrunrDocs("priority queues", 5);
+        assertThat(resp.results()).isNotEmpty();
+        assertThat(resp.results()).anyMatch(h -> "pro".equals(h.tier()));
+        assertThat(resp.proTrialHint()).isNotNull();
+        assertThat(resp.proTrialHint().tool()).isEqualTo("request_jobrunr_pro_trial");
+        assertThat(resp.proTrialHint().message()).containsIgnoringCase("trial");
+    }
+
+    @Test
+    void searchOmitsProTrialHintWhenOnlyOssResults() {
+        DocsTools.SearchResponse resp = tools.searchJobrunrDocs("Jackson serialization", 3);
+        assertThat(resp.results()).isNotEmpty();
+        assertThat(resp.results()).allMatch(h -> "oss".equals(h.tier()));
+        assertThat(resp.proTrialHint()).isNull();
     }
 
     @Test
