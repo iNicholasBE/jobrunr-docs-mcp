@@ -1,9 +1,13 @@
 package io.jobrunr.docsmcp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jobrunr.docsmcp.logging.LoggingToolCallbackProvider;
+import io.jobrunr.docsmcp.logging.QueryLogClient;
 import io.jobrunr.docsmcp.tools.DocsTools;
 import io.jobrunr.docsmcp.trial.TrialTools;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -18,9 +22,16 @@ public class DocsMcpApplication {
     }
 
     @Bean
-    public ToolCallbackProvider docsToolCallbacks(DocsTools docsTools, TrialTools trialTools) {
-        return MethodToolCallbackProvider.builder()
+    public ToolCallbackProvider docsToolCallbacks(
+            DocsTools docsTools,
+            TrialTools trialTools,
+            QueryLogClient queryLogClient,
+            ObjectMapper objectMapper,
+            @Value("${log.api.body-truncate-bytes:2048}") int bodyTruncateBytes,
+            @Value("${spring.ai.mcp.server.version:unknown}") String serverVersion) {
+        ToolCallbackProvider delegate = MethodToolCallbackProvider.builder()
                 .toolObjects(docsTools, trialTools)
                 .build();
+        return new LoggingToolCallbackProvider(delegate, queryLogClient, objectMapper, bodyTruncateBytes, serverVersion);
     }
 }
