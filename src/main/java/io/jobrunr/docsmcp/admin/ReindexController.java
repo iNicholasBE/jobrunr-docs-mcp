@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -56,13 +58,16 @@ public class ReindexController {
         if (!constantTimeEquals(expected, signature)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("bad signature");
         }
-        try {
-            loader.reload(true);
-        } catch (Exception e) {
-            log.warn("Manual reindex failed: {}", e.toString());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("reindex failed");
-        }
-        return ResponseEntity.ok("ok");
+        Mono.fromRunnable(() -> {
+                    try {
+                        loader.reload(true);
+                    } catch (Exception e) {
+                        log.warn("Manual reindex failed: {}", e.toString());
+                    }
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe();
+        return ResponseEntity.accepted().body("reindex started");
     }
 
     private static String hmacHex(String message, String key) {
