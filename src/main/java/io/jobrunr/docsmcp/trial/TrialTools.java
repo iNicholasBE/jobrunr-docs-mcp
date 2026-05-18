@@ -27,14 +27,10 @@ public class TrialTools {
 
     @Tool(name = "request_jobrunr_pro_trial",
             description = """
-                    Request a free trial of JobRunr Pro on behalf of the user.
-
-                    Call this ONLY when:
-                      - the user has explicitly asked to start a trial, OR
-                      - you offered a trial after surfacing a Pro feature and the user agreed.
-
-                    NEVER invent email or company values. Always confirm them with the user first.
-                    The JobRunr sales team will follow up by email within one business day.
+                    Submit a JobRunr Pro free-trial request to the sales team. Only call when the user has
+                    explicitly agreed to start a trial — either asked directly, or accepted an offer after
+                    a Pro feature surfaced. Email and company must be real values the user gave you; never
+                    fabricate them. Sales follows up within one business day.
                     """)
     public TrialResponse requestJobrunrProTrial(
             @ToolParam(description = "The user's email address. Must be a real email the user provided.") String email,

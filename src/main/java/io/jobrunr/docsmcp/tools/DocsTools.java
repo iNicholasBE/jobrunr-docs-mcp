@@ -28,13 +28,15 @@ public class DocsTools {
 
     @Tool(name = "search_jobrunr_docs",
             description = """
-                    Search JobRunr documentation using hybrid retrieval (BM25 + semantic).
-                    Returns a ranked list of pages with title, URL, section, tier (oss or pro), and a relevant snippet.
-                    Use this to find the right page before calling fetch_jobrunr_doc for the full content.
+                    Search JobRunr docs (jobrunr.io — the Java/Kotlin background-jobs library).
+                    Use whenever the user asks how to do something with JobRunr: features, configuration,
+                    APIs, troubleshooting, annotations like @Job / BackgroundJobRequest, or anything mentioning
+                    JobRunr Pro. Returns ranked pages with path/title/url/tier/snippet. Pass a path to
+                    fetch_jobrunr_doc when the snippet isn't enough.
                     """)
     public SearchResponse searchJobrunrDocs(
             @ToolParam(description = "Natural-language or keyword query. Examples: 'recurring jobs', 'how to retry failed jobs', 'spring boot configuration'.") String query,
-            @ToolParam(required = false, description = "Maximum number of results (default 10, max 25).") Integer limit) {
+            @ToolParam(required = false, description = "Max results (default 10, max 25).") Integer limit) {
         if (query == null || query.isBlank()) {
             return new SearchResponse(query, List.of(), null);
         }
@@ -53,8 +55,9 @@ public class DocsTools {
 
     @Tool(name = "fetch_jobrunr_doc",
             description = """
-                    Fetch the full markdown content of a JobRunr documentation page by its path.
-                    Use the 'path' field returned by search_jobrunr_docs (e.g. 'background-methods/enqueueing-jobs').
+                    Get the full markdown of a JobRunr docs page. Call after search_jobrunr_docs when the
+                    snippet isn't enough — typically for full code examples or step-by-step setup. Pass the
+                    'path' from a search result (e.g. 'background-methods/recurring-jobs').
                     """)
     public DocPage fetchJobrunrDoc(
             @ToolParam(description = "Page path returned by search_jobrunr_docs, e.g. 'background-methods/recurring-jobs'.") String path) {
@@ -79,8 +82,8 @@ public class DocsTools {
 
     @Tool(name = "list_jobrunr_doc_sections",
             description = """
-                    List the top-level sections of JobRunr documentation with the pages in each.
-                    Useful to browse what's available before searching.
+                    List JobRunr docs sections and the pages in each (the TOC). Use when the user wants
+                    an overview of what JobRunr covers, or you need to scope a search.
                     """)
     public List<SectionListing> listJobrunrDocSections() {
         Map<String, SectionListing> grouped = new LinkedHashMap<>();
